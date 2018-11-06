@@ -2,7 +2,6 @@ import simpy
 from Elevator import Elevator
 from Rider import Rider
 import sys
-import pygame
 import time
 import random
 import pygame
@@ -58,10 +57,10 @@ class Building():
 					rider.rect.y = ele.rect.y + 25
 
 				self.screen.blit(ele.img, ele.rect)
-				print ele.name, "at", ele.curr_floor, "with stops", ele.stops, "and has riders",
+				print (ele.name, "at", ele.curr_floor, "with stops", ele.stops, "and has riders")
 				for rider in ele.riders:
-					print rider.name,
-				print ""
+					print (rider.name)
+				print ("")
 			for rider in self.riders:
 				if not rider.request_elevator and not rider.chosen_elevator and rider.curr_floor != rider.desired_floor:
 					rider.request_elevator = True
@@ -90,7 +89,7 @@ class Building():
 
 				elif rider.chosen_elevator and rider.curr_floor != rider.desired_floor:# and rider.request_elevator :
 					self.screen.blit(rider.img, rider.rect)
-				print rider.name, "at", rider.curr_floor, rider.request_elevator, "wants to go to", rider.desired_floor
+				print (rider.name, "at", rider.curr_floor, rider.request_elevator, "wants to go to", rider.desired_floor)
 					# elevator is choosen and picks up the next rider
 			self.display.flip()
 			yield self.env.timeout(1)

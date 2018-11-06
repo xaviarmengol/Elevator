@@ -1,6 +1,5 @@
 import random
 import simpy
-import panda3d
 import pygame
 from Rider 		import Rider
 from Elevator	import Elevator
