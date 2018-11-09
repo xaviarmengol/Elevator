@@ -1,62 +1,95 @@
-MAX_EVEVATOR_SIZE = 5
+MAX_EVEVATOR_SIZE = 2
 
 class Elevator():
 
-	def __init__(self, name, env):
-		self.max 		= MAX_EVEVATOR_SIZE
-		self.riders 	= []
-		self.name	 	= name
-		self.curr_floor	= 0
-		self.stops		= []
-		self.going_up	= True
-		self.still 		= True
-		self.env		= env
-		self.speed		= [0, 75]
-		self.rect		= None
-		self.img		= None
+    def __init__(self, name, env):
+        self.max = MAX_EVEVATOR_SIZE
 
-	def addRider(self,rider):
-		self.riders.append(rider)
+        self.name = name
+        self.env = env
 
-	def getRiders(self):
-		return self.riders
+        self.current_floor = 0
+        self.destination_floor = 0
+        self.riders = []
+        self.stop_list = []
+        self.going_up = True
+        self.still = True
+        self.time_per_floor = 1
+        self.speed = [0, 75 / self.time_per_floor]
 
-	def set_rect(self,rect):
-		self.rect = rect
+        self.rect = None
+        self.img = None
 
-	def set_img(self,img):
-		self.img = img
 
-	def run(self):
-		while True:
-			self.still = True
-			if self.stops:
-				curr_dest=None
-				if self.going_up:
-					curr_dest = max(self.stops)
-				else:
-					curr_dest = min(self.stops)
+    def add_rider(self, rider):
+        self.riders.append(rider)
 
-				if curr_dest > self.curr_floor:
-					self.curr_floor+= 1
-					self.still		= False
-					self.going_up	= True
-				elif curr_dest < self.curr_floor:
-					self.curr_floor-= 1
-					self.still		= False
-					self.going_up	= False
+    def add_stop(self, stop):
+        self.stop_list.append(stop)
 
-				for rider in self.riders:
-					rider.curr_floor=self.curr_floor
-				yield self.env.timeout(1)
-			else:
-				yield self.env.timeout(1)
+    def remove_stop(self, stop):
+        self.stop_list.remove(stop)
 
-	def add_stop(self, stop):
-		self.stops.append(stop)
 
-	def remove_stop(self, stop):
-		self.stops.remove(stop)
+    def run(self):
 
-	def add_rider(self,rider):
-		self.riders.append(rider)
+        while True:
+
+            if self._there_is_stops_to_process():
+
+                self._elevator_control()
+                step = self._move_elevator()
+
+                yield self.env.timeout(self.time_per_floor)
+
+                self.current_floor += step
+                self._move_riders_in_elevator()
+
+            else:
+                self.still = True
+                yield self.env.timeout(1)
+
+
+    def _there_is_stops_to_process(self):
+        return self.stop_list
+
+
+    def _elevator_control(self):
+        """Decision logic for new destination"""
+
+        if self.going_up:
+            destination_floor = max(self.stop_list)
+        else:
+            destination_floor = min(self.stop_list)
+
+        self.destination_floor = destination_floor
+
+
+    def _move_elevator(self):
+        """ Moving elevator up, down or not moving"""
+
+        if self.destination_floor > self.current_floor:
+            self.going_up = True
+            step = +1
+            self.still = False
+
+        elif self.destination_floor < self.current_floor:
+            self.going_up = False
+            step = -1
+            self.still = False
+
+        else:
+            self.still = True
+            step = 0
+
+        return step
+
+
+
+    def _move_riders_in_elevator(self):
+
+        for rider in self.riders:
+            rider.current_floor = self.current_floor
+
+            rider.rect.x = self.rect.x
+            rider.rect.y = self.rect.y + 25
