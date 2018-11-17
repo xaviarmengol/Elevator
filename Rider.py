@@ -2,14 +2,16 @@ import random
 
 class Rider():
 
-    def __init__(self, name, env):
+    def __init__(self, name, max_floors, env):
+
         self.name = name
+        self.max_floors = max_floors
         self.env = env
 
         self.wait = random.randint(1, 5)
         self.chosen_elevator = None
         self.current_floor = 0
-        self.desired_floor = random.randint(1, 7)
+        self.desired_floor = random.randint(1, self.max_floors - 1)
         self.request_elevator = False
         self.waiting = True
 
@@ -44,7 +46,7 @@ class Rider():
         """ Rider logic. How many time spend in the floor, and where does he go next"""
 
         time_in_floor = random.randint(10, 15)
-        next_floor = random.randint(0, 10)
+        next_floor = random.randint(0, self.max_floors - 1)
 
         if self.env.now > 50:
             next_floor = 0

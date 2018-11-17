@@ -15,7 +15,7 @@ class Elevator():
         self.going_up = True
         self.still = True
         self.time_per_floor = 1
-        self.speed = [0, 75 / self.time_per_floor]
+        self.speed = [0, 100 / self.time_per_floor]
 
         self.rect = None
         self.img = None
