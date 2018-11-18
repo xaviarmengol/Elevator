@@ -8,10 +8,10 @@ from Building import Building
 
 RANDOM_SEED = 42
 NUM_OF_ELEVATORS = 4
-NUM_OF_RIDERS = 30
-NUM_OF_FLOORS = 5
+NUM_OF_RIDERS = 100
+NUM_OF_FLOORS = 8
 
-env = simpy.RealtimeEnvironment(initial_time=0, factor=0.3, strict=False)
+env = simpy.RealtimeEnvironment(initial_time=0, factor=0.4, strict=False)
 
 elevators = []
 riders = []
@@ -22,7 +22,7 @@ random.seed(RANDOM_SEED)
 
 pygame.init()
 
-size = width, height = (NUM_OF_ELEVATORS + 1) * 100 + 900, (NUM_OF_FLOORS + 1) * 85
+size = width, height = (NUM_OF_ELEVATORS + 1) * 100 + 900, (NUM_OF_FLOORS + 1) * 85 + 100
 
 screen = pygame.display.set_mode(size)
 display = pygame.display
@@ -34,7 +34,7 @@ for elevator_num in range(NUM_OF_ELEVATORS):
     elevators.append(new_elevator)
 
 for rider_number in range(NUM_OF_RIDERS):
-    new_rider = Rider(chr(65 + rider_number), NUM_OF_FLOORS, env)
+    new_rider = Rider(str(rider_number), NUM_OF_FLOORS, env)
     riders.append(new_rider)
     riders_in_floor[0].append(new_rider)
 

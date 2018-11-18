@@ -1,4 +1,5 @@
-MAX_EVEVATOR_SIZE = 2
+MAX_EVEVATOR_SIZE = 4
+
 
 class Elevator():
 
@@ -11,11 +12,12 @@ class Elevator():
         self.current_floor = 0
         self.destination_floor = 0
         self.riders = []
-        self.stop_list = []
+        self.stop_list = set()
         self.going_up = True
         self.still = True
         self.time_per_floor = 1
-        self.speed = [0, 100 / self.time_per_floor]
+        self.time_open_doors = 1
+        self.speed = [0, 100]#/ self.time_per_floor]
 
         self.rect = None
         self.img = None
@@ -25,10 +27,13 @@ class Elevator():
         self.riders.append(rider)
 
     def add_stop(self, stop):
-        self.stop_list.append(stop)
+        self.stop_list.add(stop) #append(stop)
 
     def remove_stop(self, stop):
-        self.stop_list.remove(stop)
+        try:
+            self.stop_list.discard(stop) #remove(stop)
+        except:
+            pass
 
 
     def run(self):
@@ -40,10 +45,16 @@ class Elevator():
                 self._elevator_control()
                 step = self._move_elevator()
 
+                print(self.name, self.destination_floor, self.going_up)
+
                 yield self.env.timeout(self.time_per_floor)
 
                 self.current_floor += step
                 self._move_riders_in_elevator()
+
+
+
+                #yield self.env.timeout(self.time_open_doors)
 
             else:
                 self.still = True
@@ -91,5 +102,3 @@ class Elevator():
         for rider in self.riders:
             rider.current_floor = self.current_floor
 
-            rider.rect.x = self.rect.x
-            rider.rect.y = self.rect.y + 25

@@ -4,6 +4,8 @@ import random
 import pygame
 import copy
 
+RANDOM_SEED = 42
+random.seed(RANDOM_SEED)
 
 class Building():
     
@@ -31,14 +33,15 @@ class Building():
 
         self.riders_x_start_location = 100 * (len(elevators) + 0.5)
 
-        colors = [(random.randint(50,255),random.randint(50,255),random.randint(50,255)) for _ in range(len(self.riders))]
-
-        for color, rider in zip(colors, riders):
+        #colors = [(random.randint(0,155),random.randint(0,155),random.randint(0,155)) for _ in range(len(self.riders))]
+        colors = [(0,0,255), (0,255,255), (255,0,0), (0,255,0), (255,0,255)]
+        for count, rider in enumerate(riders):
             #rider_img = image.load("stick_"+str(count % 4)+".bmp")
             rider_img = image.load("stick_1.bmp")
-            rider_img = colorize(rider_img, color)
+            rider_img = colorize(rider_img, colors[count%5])
             rider_rect = rider_img.get_rect()
             rider.rect = rider_rect
+            rider.rect.y = self._screen_y - 80
             rider.img = rider_img
 
     def run(self):
@@ -75,8 +78,9 @@ class Building():
                     best_elevator.add_stop(rider.current_floor)
                     rider.chosen_elevator = best_elevator
 
-                    self._riders_in_floor[rider.current_floor].remove(rider)
-                    self._riders_in_landing[rider.current_floor].append(rider)
+                    if rider in self._riders_in_floor[rider.current_floor]:
+                        self._riders_in_floor[rider.current_floor].remove(rider)
+                        self._riders_in_landing[rider.current_floor].append(rider)
 
 
                 elif rider.request_elevator and rider.chosen_elevator and rider.current_floor != rider.desired_floor:
@@ -97,13 +101,14 @@ class Building():
                     # Just arrived to the plant
 
                     rider.chosen_elevator.riders.remove(rider)
-                    rider.chosen_elevator.stop_list.remove(rider.current_floor)
+                    rider.chosen_elevator.remove_stop(rider.current_floor)
                     rider.chosen_elevator = None
                     self._riders_in_floor[rider.current_floor].append(rider)
 
 
                 elif rider.chosen_elevator and rider.current_floor != rider.desired_floor:# and rider.request_elevator :
                     # In the elevator
+                    self.screen.blit(rider.img, rider.rect)
 
                     pass
 
@@ -111,7 +116,6 @@ class Building():
                     assert False
 
                 #print(rider.name, "at", rider.current_floor, 'request elev', rider.request_elevator, "wants to go to", rider.desired_floor)
-
 
 
             self.display.flip()
@@ -125,13 +129,23 @@ class Building():
             if rider.chosen_elevator == ele and ele.current_floor == rider.current_floor and rider.request_elevator:
                 # Rider enter to the elevator and push floor button
 
-                rider.request_elevator = False
-                ele.add_rider(rider)
                 ele.remove_stop(rider.current_floor)
-                ele.add_stop(rider.desired_floor)
-                #print('before', self._riders_in_floor[rider.current_floor])
-                self._riders_in_landing[rider.current_floor].remove(rider)
-                #print('after', self._riders_in_floor[rider.current_floor])
+
+                if len(ele.riders) < ele.max:
+
+                    rider.request_elevator = False
+                    ele.add_rider(rider)
+                    ele.add_stop(rider.desired_floor)
+
+                    self._riders_in_landing[rider.current_floor].remove(rider)
+
+                else:
+                    print(ele.name, 'Can not take', rider.name)
+                    rider.request_elevator = False
+                    rider.chosen_elevator = None
+                    #best_elevator = random.choice(self.elevators)#self._choose_best_elevator(rider)
+                    #best_elevator.add_stop(rider.current_floor)
+                    #rider.chosen_elevator = best_elevator
 
 
     def _move_elevator_and_his_riders(self, ele):
@@ -147,10 +161,8 @@ class Building():
             ele.rect = ele.rect.move([ele.speed[0], ele.speed[1]])
 
         for rider in ele.riders:
-            rider.rect.x = ele.rect.x
+            rider.rect.x = ele.rect.x + ele.riders.index(rider)*10
             rider.rect.y = ele.rect.y + 25
-
-
 
 
     def _choose_best_elevator(self, rider):
@@ -168,7 +180,7 @@ class Building():
             if len(elevator.stop_list):
                 ele_score -= (len(elevator.stop_list) * 4)
 
-            ele_score -= abs(elevator.current_floor - rider.desired_floor)
+            ele_score -= abs(elevator.current_floor - rider.desired_floor)*10
 
             #print('ele_score: ', elevator.name, ele_score)
 
